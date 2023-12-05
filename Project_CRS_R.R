@@ -57,32 +57,42 @@ mean_type2_day
 max_type1_day <- max(type1_per_day_data$type1_count)
 
 patient_counts_1 <- 0:max_type1_day  # Set the range of patient counts you want to consider
-poisson_probabilities <- dpois(patient_counts_1, lambda = mean_type1_day)
+poisson_probabilities_1 <- dpois(patient_counts_1, lambda = mean_type1_day)
 
 # Plot the Poisson distribution
-plot(patient_counts_1, poisson_probabilities, type = "h",
+plot(patient_counts_1, poisson_probabilities_1, type = "h",
      main = "Poisson Distribution of Type 1 Patients per Day",
      xlab = "Number of Type 1 Patients per Day",
      ylab = "Probability",
-     ylim = c(0, max(poisson_probabilities) * 1.2))
+     ylim = c(0, max(poisson_probabilities_1) * 1.2))
 
-
-# Poisson distribution for the arrivals of the second group
+# Random testing for the second group
+# Poisson distribution for the arrivals of the second group, not sure if it is Poisson
 max_type2_day <- max(type2_per_day_data$type2_count)
 
 patient_counts_2 <- 0:max_type2_day  # Set the range of patient counts you want to consider
-poisson_probabilities <- dpois(patient_counts_2, lambda = mean_type2_day)
+poisson_probabilities_2 <- dpois(patient_counts_2, lambda = mean_type2_day)
 
 # Plot the Poisson distribution
-plot(patient_counts_2, poisson_probabilities, type = "h",
-     main = "Poisson Distribution of Type 1 Patients per Day",
-     xlab = "Number of Type 1 Patients per Day",
+plot(patient_counts_2, poisson_probabilities_2, type = "h",
+     main = "Poisson Distribution of Type 2 Patients per Day",
+     xlab = "Number of Type 2 Patients per Day",
      ylab = "Probability",
-     ylim = c(0, max(poisson_probabilities) * 1.2))
+     ylim = c(0, max(poisson_probabilities_2) * 1.2))
+
+z <- dnorm(patient_counts_2, mean(patient_counts_2), sd(patient_counts_2))
+plot(patient_counts_2,z)
 
 
+# Creating the empirical distribution function
+duration_edf_2 <- ecdf(duration_2)
 
+# Plotting the empirical distribution function
+plot(duration_edf_2, main = "Empirical Distribution Function", xlab = "Data Values", ylab = "Cumulative Probability")
 
+# From bootstrap lecture, currently not working
+J <- sample.int(length(duration_2), size = length(duration_2), replace = TRUE)
+duration_2.star <- duration_2[J] 
 
-
+plot(duration_2.star, main = "Duration 2 star", xlab = "Data Values", ylab = "Cumulative Probability")
 
