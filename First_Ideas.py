@@ -3,7 +3,7 @@ class Patient:
                  appointment_time, scan_duration):
         self.call_date = call_date
         self.call_time = call_time
-        self.category = category
+        self.category = category #can you see this?
         self.appointment_date = appointment_date
         self.appointment_time = appointment_time
         self.scan_duration = scan_duration
