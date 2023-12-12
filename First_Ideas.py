@@ -29,13 +29,16 @@ def schedule_appointment(machine, patient, slot_duration):
     patient.appointment_time = machine.next_available_slot[patient.appointment_date]
     machine.next_available_slot[patient.appointment_date] += slot_duration
     if patient.scan_duration > slot_duration:
-        machine.surplus[patient.appointment_date] += patient.scan_duration - slot_duration
+        machine.surplus[patient.appointment_date] += patient.scan_duration - slot_duration   # difference between actual duration and slot time = surplus
     
 # Machine initialization
 machine1 = Machine()
 machine2 = Machine()
 
-# Old system
+# Mean durations of scans:
+# Type 1: 0.43 -> 30 mins 0.5
+# Type 2: 0.67 -> 45 mins 0.75
+
 slot_duration_t1 = 0.5
 slot_duration_t2 = 0.75
 
@@ -54,6 +57,7 @@ for patient in patients:
         schedule_appointment(machine2, patient, slot_duration_t2)
     
 # Calculating overtime
+# The sum of surplus is  total overtime
 overtime_m1 = np.sum(machine1.surplus)
 overtime_m2 = np.sum(machine2.surplus)
 
@@ -67,58 +71,3 @@ print("Machine 2 finishes on the following times:")
 for day, surplus in enumerate(machine2.surplus):
     print(f"Day {day + 1}: {17 + surplus}")
 print(f"The total overtime for machine 2 in this month was {overtime_m2} hours.")
-
-'''
-next_available_slot = [date]
-
-# Mean durations of scans:
-# Type 1: 0.43 -> 30 mins 0.5
-# Type 2: 0.67 -> 45 mins 0.75
-
-# difference between actual duration and slot time = surplus
-# sum of surplus is overtime
-
-class Simulation:
-    def __init__(self):
-        self.current_time = 0 # Start simulation at the current time
-        self.patient_queue = []  # Queue for incoming patients
-        self.machines = [Machine(), Machine()]  # Two MRI machines
-
-    def schedule_next_event(self):
-        # Logic to determine the next event based on the current state of the system
-        # This may involve determining the next patient arrival, scan start, etc.
-        pass
-
-    def run_simulation(self, end_time):
-        while self.current_time < end_time:
-            # Execute the next scheduled event
-            self.schedule_next_event()
-            # Advance the simulation time to the next event
-            self.current_time = self.next_event_time
-
-    def handle_patient_arrival(self, patient):
-        # Logic to handle a new patient arriving and scheduling an appointment
-        pass
-
-    def handle_scan_start(self, machine):
-        # Logic to handle the start of a scan on a machine
-        pass
-
-    def handle_scan_finish(self, machine):
-        # Logic to handle the completion of a scan on a machine
-        pass
-
-# Example usage:
-simulation = Simulation()
-
-# Creating instances of the Patient class
-patient_1 = Patient(datetime(2023, 8, 1, 8, 23), "Type_1", datetime(2023, 8, 2, 8, 0), 1)
-patient_2 = Patient(datetime(2023, 8, 1, 9, 30), "Type_2", datetime(2023, 8, 2, 9, 0), 0.5)
-
-# Enqueue patients for simulation
-simulation.patient_queue.extend([patient_1, patient_2])
-
-# Run the simulation for a specific time duration
-end_time = datetime(2023, 8, 3, 17, 0)  # Example end time
-simulation.run_simulation(end_time)
-'''
