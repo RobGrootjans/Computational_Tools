@@ -1,22 +1,23 @@
 import numpy as np
+import pandas as pd
 
 class Patient:
     def __init__(self, call_date, call_time, category, appointment_date, 
                  appointment_time, scan_duration):
-        self.call_date = call_date
+        self.call_date = call_date - 1 # because python uses zero-based indexing
         self.call_time = call_time
         self.category = category
         self.appointment_date = appointment_date
         self.appointment_time = appointment_time
         self.scan_duration = scan_duration
 
-'''
+
     def display_info(self):
         print(f"Patient Category: {self.category}")
         print(f"Call Date and Time: {self.call_date} at {self.call_time}")
         print(f"Appointment Date and Time: {self.appointment_date} at {self.appointment_time}")
         print(f"Scan Duration: {self.scan_duration} hours")
-'''
+
         
 class Machine:
     def __init__(self):
@@ -42,12 +43,19 @@ machine2 = Machine()
 slot_duration_t1 = 0.5
 slot_duration_t2 = 0.75
 
-# Creating instances  
-patient1 = Patient(1, 8.23, 1, None, None, 1)
-patient2 = Patient(1, 9.3, 2, None, None, 0.5)
-patient3 = Patient(1, 10, 1, None, None, 2)
+# Read data from CSV file
+df = pd.read_csv(r'C:\Users\matth\OneDrive\Dokumente\ScanRecords.csv') # Change path
 
-patients = [patient1, patient2, patient3]
+# Creating instances
+patients = []
+for _, row in df.iterrows():
+    call_date = int(row['Date'].split('-')[2])  # Extract day from the date
+    call_time = row['Time']
+    category = 1 if row['PatientType'] == 'Type 1' else 2
+    scan_duration = row['Duration']
+
+    patient = Patient(call_date, call_time, category, None, None, scan_duration)
+    patients.append(patient)
 
 # Assigning patients
 for patient in patients:
