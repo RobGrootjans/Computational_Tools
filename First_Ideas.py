@@ -29,7 +29,7 @@ def schedule_appointment(machine, patient, slot_duration):
     patient.appointment_time = machine.next_available_slot[patient.appointment_date]
     machine.next_available_slot[patient.appointment_date] += slot_duration
     if patient.scan_duration > slot_duration:
-        machine.surplus += patient.scan_duration - slot_duration
+        machine.surplus[patient.appointment_date] += patient.scan_duration - slot_duration
     
 # Machine initialization
 machine1 = Machine()
