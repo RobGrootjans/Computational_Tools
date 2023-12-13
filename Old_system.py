@@ -10,6 +10,14 @@ class Patient:
         self.appointment_date = appointment_date
         self.appointment_time = appointment_time
         self.scan_duration = scan_duration
+
+
+    def display_info(self):
+        print(f"Patient Category: {self.category}")
+        print(f"Call Date and Time: {self.call_date} at {self.call_time}")
+        print(f"Appointment Date and Time: {self.appointment_date} at {self.appointment_time}")
+        print(f"Scan Duration: {self.scan_duration} hours")
+
         
 class Machine:
     def __init__(self):
@@ -23,27 +31,57 @@ def schedule_appointment(machine, patient, slot_duration):
     machine.next_available_slot[patient.appointment_date] += slot_duration
     if patient.scan_duration > slot_duration:
         machine.surplus[patient.appointment_date] += patient.scan_duration - slot_duration   # difference between actual duration and slot time = surplus
+
+def generate_data(num_days, mean_num_type1, mean_num_type2, mean_duration_type1,
+                  mean_duration_type2, std_duration_type1, std_duration_type2):
+    np.random.seed(42) # for reproducibility
+    data = []
     
+    for day in range(1, num_days + 1):
+        
+        num_type1 = np.random.poisson(mean_num_type1)
+        for _ in range(num_type1):
+            call_date = day
+            call_time = np.random.uniform(8, 17) # assuming calls can be made between 8 AM and 5 PM
+            category = 1
+            scan_duration = np.random.normal(mean_duration_type1, std_duration_type1)
+            data.append([call_date, call_time, category, None, None, scan_duration])
+        
+        num_type2 = np.random.poisson(mean_num_type2)
+        for _ in range(num_type2):
+            call_date = day
+            call_time = np.random.uniform(8, 17)
+            category = 2
+            scan_duration = np.random.normal(mean_duration_type2, std_duration_type2)
+            data.append([call_date, call_time, category, None, None, scan_duration])
+            
+    return pd.DataFrame(data, columns=['Day', 'Time', 'PatientType', 'AppointmentDate', 'AppointmentTime', 'Duration'])
+
 # Machine initialization
 machine1 = Machine()
 machine2 = Machine()
 
-# Mean durations of scans:
-# Type 1: 0.43 -> 30 mins 0.5
-# Type 2: 0.67 -> 45 mins 0.75
-
+# Slot_durations
 slot_duration_t1 = 0.5
 slot_duration_t2 = 0.75
 
-# Read data from CSV file
-df = pd.read_csv(r'C:\Users\matth\OneDrive\Dokumente\ScanRecords.csv') # Change path
+# Generating data
+num_days = 31
+mean_num_type1 = 16.47826
+mean_num_type2 = 12.87234
+mean_duration_type1 = 0.43
+mean_duration_type2 = 0.67
+std_duration_type1 = 0.09777424
+std_duration_type2 = 0.10347673
 
-# Creating instances
+data_df = generate_data(num_days, mean_num_type1, mean_num_type2, mean_duration_type1, mean_duration_type2, std_duration_type1, std_duration_type2)
+
+# Creating instances and sorting patients acoording to their call time to apply FCFS
 patients = []
-for _, row in df.iterrows():
-    call_date = int(row['Date'].split('-')[2])  # Extract day from the date
+for _, row in data_df.sort_values(by=['Day', 'Time']).iterrows():
+    call_date = int(row['Day'])
     call_time = row['Time']
-    category = 1 if row['PatientType'] == 'Type 1' else 2
+    category = int(row['PatientType'])
     scan_duration = row['Duration']
 
     patient = Patient(call_date, call_time, category, None, None, scan_duration)
@@ -66,10 +104,10 @@ for day, surplus in enumerate(machine1.surplus):
     surplus_day = machine1.next_available_slot[day][0] + surplus[0] - 17
     if surplus_day > 0:
         overtime_m1 += surplus_day
-        print(f"Day {day + 1}: {surplus_day}")
+        print(f"Day {day + 1}: {surplus_day} hours")
     else:
         surplus_day = 0
-        print(f"Day {day + 1}: {surplus_day}")
+        print(f"Day {day + 1}: {surplus_day} hours")
 print(f"The total overtime for machine 1 this month was {overtime_m1} hours.")
 
 print("Machine 2 finishes with a delay of:")
@@ -77,5 +115,8 @@ for day, surplus in enumerate(machine2.surplus):
     surplus_day = machine2.next_available_slot[day][0] + surplus[0] - 17
     if surplus_day > 0:
         overtime_m2 += surplus_day
-        print(f"Day {day + 1}: {surplus_day}")
+        print(f"Day {day + 1}: {surplus_day} hours")
+    else:
+        surplus_day = 0
+        print(f"Day {day + 1}: {surplus_day} hours")
 print(f"The total overtime for machine 2 this month was {overtime_m2} hours.")
