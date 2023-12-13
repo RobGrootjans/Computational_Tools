@@ -96,3 +96,69 @@ duration_2.star <- duration_2[J]
 
 plot(duration_2.star, main = "Duration 2 star", xlab = "Data Values", ylab = "Cumulative Probability")
 
+
+#One way that I thought about doing the bootstrap, but i was not sure if that was enough
+# Set a seed for reproducibility
+set.seed(123)
+
+# Number of bootstrap samples
+B <- 1000
+
+# Initialize an empty vector to store bootstrap means
+bootstrap_means <- numeric(B)
+
+# Bootstrap loop
+for (i in 1:B) {
+  # Sample with replacement
+  sampled_data <- sample(duration_2, size = length(duration_2), replace = TRUE)
+  
+  # Calculate the mean of the sampled data
+  bootstrap_means[i] <- mean(sampled_data)
+}
+
+# Plot the histogram of bootstrap means
+hist(bootstrap_means, main = "Bootstrap Distribution of Mean Duration for Type 2 Patients",
+     xlab = "Bootstrap Means", ylab = "Frequency", col = "skyblue", border = "black")
+
+# Calculate the confidence interval for the bootstrap means
+confidence_interval <- quantile(bootstrap_means, c(0.025, 0.975))
+confidence_interval
+
+
+#second way
+# Set a seed for reproducibility
+set.seed(123)
+
+# Number of Monte Carlo simulations
+num_simulations <- 1000
+
+# Initialize vectors to store simulation results
+simulated_means <- numeric(num_simulations)
+simulated_medians <- numeric(num_simulations)
+simulated_probabilities <- numeric(num_simulations)
+
+# Monte Carlo Simulation loop
+for (i in 1:num_simulations) {
+  # Simulate data from a distribution (you can experiment with different distributions)
+  simulated_data <- rnorm(n = length(duration_2), mean = mean_duration_2, sd = sd_duration_2)
+  
+  # Apply plug-in estimators to the simulated data
+  simulated_means[i] <- mean(simulated_data)
+  simulated_medians[i] <- median(simulated_data)
+  
+  # Example: Probability of exceeding a certain threshold (adjust as needed)
+  threshold <- 10
+  simulated_probabilities[i] <- mean(simulated_data > threshold)
+}
+
+# Plot histograms of simulated results
+par(mfrow = c(3, 1))
+hist(simulated_means, main = "Simulated Means", xlab = "Mean Duration")
+hist(simulated_medians, main = "Simulated Medians", xlab = "Median Duration")
+hist(simulated_probabilities, main = "Simulated Probabilities", xlab = "Probability of Exceeding Threshold")
+
+
+
+
+
+
