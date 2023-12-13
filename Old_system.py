@@ -10,14 +10,6 @@ class Patient:
         self.appointment_date = appointment_date
         self.appointment_time = appointment_time
         self.scan_duration = scan_duration
-
-
-    def display_info(self):
-        print(f"Patient Category: {self.category}")
-        print(f"Call Date and Time: {self.call_date} at {self.call_time}")
-        print(f"Appointment Date and Time: {self.appointment_date} at {self.appointment_time}")
-        print(f"Scan Duration: {self.scan_duration} hours")
-
         
 class Machine:
     def __init__(self):
