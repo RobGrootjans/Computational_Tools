@@ -49,6 +49,22 @@ def generate_data(num_days, mean_num_type1, mean_num_type2, mean_duration_type1,
             
     return pd.DataFrame(data, columns=['Day', 'Time', 'PatientType', 'AppointmentDate', 'AppointmentTime', 'Duration'])
 
+def calculate_overtime(machine, machine_name):
+    # Initialize overtime
+    overtime_total = 0
+    
+    # Print overtime for each day and total overtime
+    print(f"{machine_name} finishes with a delay of:")
+    for day, surplus in enumerate(machine.surplus):
+        surplus_day = machine.next_available_slot[day][0] + surplus[0] - 17
+        if surplus_day > 0:
+            overtime_total += surplus_day
+            print(f"Day {day + 1}: {surplus_day} hours")
+        else:
+            surplus_day = 0
+            print(f"Day {day + 1}: {surplus_day} hours")
+    print(f"The total overtime for {machine_name} this month was {overtime_total} hours.\n")
+
 # Machine initialization
 machine1 = Machine()
 machine2 = Machine()
@@ -85,30 +101,7 @@ for patient in patients:
         schedule_appointment(machine1, patient, slot_duration_t1)
     else:
         schedule_appointment(machine2, patient, slot_duration_t2)
-    
-# Initialize overtime
-overtime_m1 = 0
-overtime_m2 = 0
 
 # Display information after assignment
-print("Machine 1 finishes with a delay of:")
-for day, surplus in enumerate(machine1.surplus):
-    surplus_day = machine1.next_available_slot[day][0] + surplus[0] - 17
-    if surplus_day > 0:
-        overtime_m1 += surplus_day
-        print(f"Day {day + 1}: {surplus_day} hours")
-    else:
-        surplus_day = 0
-        print(f"Day {day + 1}: {surplus_day} hours")
-print(f"The total overtime for machine 1 this month was {overtime_m1} hours.")
-
-print("Machine 2 finishes with a delay of:")
-for day, surplus in enumerate(machine2.surplus):
-    surplus_day = machine2.next_available_slot[day][0] + surplus[0] - 17
-    if surplus_day > 0:
-        overtime_m2 += surplus_day
-        print(f"Day {day + 1}: {surplus_day} hours")
-    else:
-        surplus_day = 0
-        print(f"Day {day + 1}: {surplus_day} hours")
-print(f"The total overtime for machine 2 this month was {overtime_m2} hours.")
+calculate_overtime(machine1, "Machine 1")
+calculate_overtime(machine2, "Machine 2")
