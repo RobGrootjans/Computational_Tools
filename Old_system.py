@@ -56,18 +56,26 @@ for patient in patients:
     else:
         schedule_appointment(machine2, patient, slot_duration_t2)
     
-# Calculating overtime
-# The sum of surplus is  total overtime
-overtime_m1 = np.sum(machine1.surplus)
-overtime_m2 = np.sum(machine2.surplus)
+# Initialize overtime
+overtime_m1 = 0
+overtime_m2 = 0
 
 # Display information after assignment
-print("Machine 1 finishes on the following times:")
+print("Machine 1 finishes with a delay of:")
 for day, surplus in enumerate(machine1.surplus):
-    print(f"Day {day + 1}: {17 + surplus}")
-print(f"The total overtime for machine 1 in this month was {overtime_m1} hours.")
+    surplus_day = machine1.next_available_slot[day][0] + surplus[0] - 17
+    if surplus_day > 0:
+        overtime_m1 += surplus_day
+        print(f"Day {day + 1}: {surplus_day}")
+    else:
+        surplus_day = 0
+        print(f"Day {day + 1}: {surplus_day}")
+print(f"The total overtime for machine 1 this month was {overtime_m1} hours.")
 
-print("Machine 2 finishes on the following times:")
+print("Machine 2 finishes with a delay of:")
 for day, surplus in enumerate(machine2.surplus):
-    print(f"Day {day + 1}: {17 + surplus}")
-print(f"The total overtime for machine 2 in this month was {overtime_m2} hours.")
+    surplus_day = machine2.next_available_slot[day][0] + surplus[0] - 17
+    if surplus_day > 0:
+        overtime_m2 += surplus_day
+        print(f"Day {day + 1}: {surplus_day}")
+print(f"The total overtime for machine 2 this month was {overtime_m2} hours.")
