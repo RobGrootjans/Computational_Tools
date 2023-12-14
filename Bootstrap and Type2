@@ -1,0 +1,144 @@
+library(fitdistrplus)
+data <- ScanRecords
+data_type1 <- data[data$PatientType=='Type 1',]
+data_type2 <- data[data$PatientType=='Type 2',]
+#
+#I start from the duration of Patients of type 1. We know that our data is normally distributed, 
+#thus I will use the sample mean and sample standard deviation to simulate the data from a parametric bootstrap.
+#Sample mean and sample standard deviation are the best estimates we have.
+mean(data_type1$Duration)
+sd(data_type1$Duration)
+mean(data_type1$Time)
+#I do similar steps in estimating the Time of patients of type 1. We know that the data is Poisson distributed, I use the sample mean as a parameter and will use the parametric bootstrap as well
+#Time being Poisson distributed means that the differences between times are Exponentially distributed, to get a vector of differences I run the following code:
+time_dif_1 <- data.frame(differences = rep(NA, times = 377))
+for(i in 2:378){
+  if(data_type1$Date[i]==data_type1$Date[i-1]){
+    time_dif_1[i-1,1] <- data_type1$Time[i]- data_type1$Time[i-1]
+  }
+  else{
+    time_dif_1[i-1,1] <- 9 + data_type1$Time[i] - data_type1$Time[i-1]
+  }
+}
+#Now we move to the patients of type 2 for which we don't know the distributions of their data. Firstly, I start with exploring the data of Duration
+mean(data_type2$Duration)
+sd(data_type2$Duration)
+hist(data_type2$Duration)
+#Next I analyse the skewness and curtosis to try to fit a known distribution. To do it, I use a
+#Cullen and Frey graph to see which might be the most accurate.
+descdist(data_type2$Duration, discrete = FALSE,boot = 500)
+
+library(MASS)
+
+# Fit a normal distribution to the data
+fit_result <- fitdistr(data_type2$Duration, densfun = "normal")
+
+
+# Plot histogram of the observed data
+hist(data_type2$Duration, freq = FALSE, col = "lightblue", main = "Fitted Distribution", xlab = "Observed Data")
+
+# Add the fitted density curve to the plot
+curve(dnorm(x, mean = fit_result$estimate["mean"], sd = fit_result$estimate["sd"]), col = "red", add = TRUE)
+
+# Add legend
+
+
+# Fit a gamma distribution to the data
+fit_result <- fitdistr(data_type2$Duration, densfun = "gamma")
+
+# Plot histogram of the observed data
+hist(data_type2$Duration, freq = FALSE, col = "lightblue", main = "Fitted Gamma Distribution", xlab = "Observed Data")
+
+# Add the fitted density curve to the plot
+curve(dgamma(x, shape = fit_result$estimate["shape"], rate = fit_result$estimate["rate"]), col = "red", add = TRUE)
+
+# Add legend
+
+```
+```{r}
+# Fit a gamma distribution to the data
+fit_gamma <- fitdistr(data_type2$Duration, "gamma")
+
+# Fit a normal distribution to the data
+fit_normal <- fitdistr(data_type2$Duration, "normal")
+
+# Likelihood Ratio Test
+LR_test <- 2 * (fit_gamma$loglik - fit_normal$loglik)
+p_value <- pchisq(LR_test, df = 2, lower.tail = FALSE)
+
+# Akaike Information Criterion (AIC)
+AIC_gamma <- AIC(fit_gamma)
+AIC_normal <- AIC(fit_normal)
+
+# Display results
+cat("Likelihood Ratio Test:\n")
+cat("  LR Test Statistic:", LR_test, "\n")
+cat("  P-value:", p_value, "\n\n")
+
+cat("AIC Comparison:\n")
+cat("  AIC for Gamma Distribution:", AIC_gamma, "\n")
+cat("  AIC for Normal Distribution:", AIC_normal, "\n")
+
+#Basing on the likelihood ratio test and the AIC, I decide to use gamma distribution as it fits our data best.
+
+Next I look at the distribution of time differences for patients of type 2. 
+#Again, using the Cullen and Frey graph I find that our data very likely follows normal distribution.
+
+time_dif_2 <- data.frame(differences = rep(NA, times = 237))
+for(i in 2:238){
+  if(data_type2$Date[i]==data_type2$Date[i-1]){
+    time_dif_2[i-1,1] <- data_type2$Time[i]- data_type2$Time[i-1]
+  }
+  else{
+    time_dif_2[i-1,1] <- 9 + data_type2$Time[i] - data_type2$Time[i-1]
+  }
+}
+descdist(time_dif_2$differences, discrete = FALSE,boot = 500)
+hist(time_dif_2$differences)
+
+#To simulate the data that we will use in the latter part I am going to use bootstrap. It is a very powerful tool allowing us to use a sample we have to generate data. As an example of how accurate bootstrap is, I show the following simulation study. Firstly, we draw a sample from a distribution, we save the mean of the distribution, resample using bootstrap and conduct a hypothesis test, to check if the drawn mean is statistically different from our originally drawn mean
+
+
+set.seed(123)													# Set the seed
+nr.sim <- 2000													# Number of simulations
+B <- 499														# Number of bootstrap replications
+n <- 100														# Sample size
+alpha <- 0.05													# Nominal level of the test
+mu <- 0.5
+sd <- 0.01# Set the true value of the mean
+reject <- rep(0, times = nr.sim)								# Vector to store rejections
+
+for (i in 1:nr.sim){											# Start the simulations
+  ## Step 1: Simulate ##
+  X <- rnorm(n, mean = mu,sd=sd)									# Draw X
+  
+  ## Step 2: Apply ##
+  X.bar <- mean(X)											# Sample mean of X
+  St.Dev <- sd(X)												# Standard deviation of X
+  Q <- sqrt(n)*(X.bar-0.5) / St.Dev									# Test statistic
+  
+  Q.star <- rep(NA, times = B)								# Vector for bootstrap quantities
+  for (b in 1:B) {
+    J <- sample.int(n, size = n, replace = TRUE)			# Draw the indices J
+    X.star <- X[J]											# Draw the bootstrap sample
+    X.bar.star <- mean(X.star)								# Bootstrap sample mean
+    St.Dev.star <- sd(X.star)								# Bootstrap standard deviation
+    Q.star[b] <- sqrt(n)*(X.bar.star - X.bar) / St.Dev.star	# Bootstrap test statistic
+  }
+  cv.star <- quantile(Q.star, probs = 1-alpha)				# Bootstrap critical value
+  
+  ## Step 3: Evaluate ##
+  if (Q > cv.star) {reject[i] <- 1}							# Check if the null hypothesis is rejected
+}
+
+## Step 4: Summarize ##
+ERF <- mean(reject)												# Empirical rejection frequency
+
+## Give output on screen ##
+if (mu == 0) {
+  print(paste("Size using bootstrap:", ERF))
+} else if (mu > 0) {
+  print(paste("Power using bootstrap:", ERF))
+}
+
+#As we can see, we rejected the null hypothesis of mean being 0.5 (so the true value) only in around 5% of the cases. This shows how accurate the simulation is.
