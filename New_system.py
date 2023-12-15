@@ -88,13 +88,23 @@ def calculate_overtime(machine, machine_name, end_time):
 num_days = 31
 start_time = 8                      # assuming calls can be made between 8 AM and 5 PM
 end_time = 17
+
+# For type 1:
+# Number of patients per day: poisson-distr. with mean 16.47826
 mean_num_type1 = 16.47826
-mean_num_type2 = 12.87234
-mean_duration_type1 = 0.43
+# Duration of a scan: normally distributed with mean 0.4326608 and sd 0.09777424
+mean_duration_type1 = 0.4326608
 std_duration_type1 = 0.09777424
+# Time between calls: exponential distribution with lambda 1.835622
+lambda_tbc_type1 = 1.835622         # tbc = time between calls
+
+# For type 2:
+# Number of patients a day: unknown
+mean_num_type2 = 12.87234
+# Durations of a scan: gamma distribution with  shape 1.136300 and scale 1.731915
 shape_duration_type2 = 1.136300 
 scale_duration_type2 = 1.731915
-lambda_tbc_type1 = 1.835622         # tbc = time between calls
+# Time between calls: normal distribution with mean 0.8666245 and Std 0.3114448
 mean_tbc_type2 = 0.8666245
 std_tbc_type2 = 0.3114448
 
