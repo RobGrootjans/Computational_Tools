@@ -88,4 +88,42 @@ for(i in 2:238){
 }
 descdist(time_dif_2$differences, discrete = FALSE,boot = 500)
 hist(time_dif_2$differences)
-.
+
+set.seed(123)
+
+# Number of bootstrap samples
+num_bootstrap_samples <- 1000
+
+# Vector to store bootstrap estimates
+bootstrap_mu <- numeric(num_bootstrap_samples)
+bootstrap_sigma <- numeric(num_bootstrap_samples)
+
+# Bootstrap procedure
+for (i in 1:num_bootstrap_samples) {
+  # Resample with replacement from daily_counts using normal distribution
+  bootstrap_sample <- rnorm(length(daily_counts), mean = mean(daily_counts), sd = sd(daily_counts))
+  
+  # Fit a normal distribution to the bootstrap sample
+  normal_fit_bootstrap <- fitdistr(bootstrap_sample, densfun = "normal")
+  
+  # Store the mu and sigma estimates
+  bootstrap_mu[i] <- normal_fit_bootstrap$estimate["mean"]
+}
+
+# Display the bootstrap results
+summary(bootstrap_mu)
+
+# Plot the bootstrap distribution of mu and sigma
+par(mfrow = c(1, 2))
+hist(bootstrap_mu, col = "lightblue", main = "Bootstrap Distribution of Mean", xlab = "Mean")
+# Fit a normal distribution to the histogram
+normal_fit_hist_mu <- fitdistr(bootstrap_mu, densfun = "normal")
+
+# Display the normal fit results for mu
+cat("Normal Fit Results for Mean:\n")
+cat("  Mean:", normal_fit_hist_mu$estimate["mean"], "\n")
+
+
+# Plot the histogram and the fitted normal distribution for mu
+hist(bootstrap_mu, freq = FALSE, col = "lightblue", main = "Bootstrap Distribution of Mean", xlab = "Mean", ylim = c(0,2))
+curve(dnorm(x, mean = normal_fit_hist_mu$estimate["mean"], sd = normal_fit_hist_mu$estimate["sd"]), col = "red", add = TRUE)
